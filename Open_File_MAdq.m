@@ -2,38 +2,38 @@ function signals = Open_File_MAdq(Path)
 %Open_File_MAdq.m 
 % 
 %*** DESCRIPCION ***
-%Función para lectura de archivo binario generado desde el sotfware 
-%del Sistema de Adquisición Multicanal de Señales Fisiológicas - MAdq.
-%del Proyecto Plataforma Multicanala de Señales Fisiológicas y Estimulación
+%Funciï¿½n para lectura de archivo binario generado desde el sotfware 
+%del Sistema de Adquisiciï¿½n Multicanal de Seï¿½ales Fisiolï¿½gicas - MAdq.
+%del Proyecto Plataforma Multicanala de Seï¿½ales Fisiolï¿½gicas y Estimulaciï¿½n
 %Multimodal
 %
-%La función retorna variables que corresponden a las señales 
-%fisiológicas o señales de propósito general guardadas en un set de captura 
-%de señales. Además, el archivo binairo contiene información de 
+%La funciï¿½n retorna variables que corresponden a las seï¿½ales 
+%fisiolï¿½gicas o seï¿½ales de propï¿½sito general guardadas en un set de captura 
+%de seï¿½ales. Ademï¿½s, el archivo binairo contiene informaciï¿½n de 
 %marcas realizadas por el usuario durante la captura de datos, cantidad 
 %paquetes recibidos, frecuencia de muestreo, entre otros.
 % 
 %*** HISTORICO DE VERSIONES REFERENCIA ***
-%Este archivo se basa en los algoritmos de lectura de señales 
-%generados por M. Cagy (2006), A. d'Affonsêca (2011, 2013) y P. Cevallos (2018)
-%  Modificado por L. Guambaña 20/01/2021
-%  Modificado por L. Guambaña y P. Cevallos 02/08/2022 
+%Este archivo se basa en los algoritmos de lectura de seï¿½ales 
+%generados por M. Cagy (2006), A. d'Affonsï¿½ca (2011, 2013) y P. Cevallos (2018)
+%  Modificado por L. Guambaï¿½a 20/01/2021
+%  Modificado por L. Guambaï¿½a y P. Cevallos 02/08/2022 
 %  Modificado por Molina Vidal, D.A. 01-jun-2023
 %   - Compatible con version de SW v11 (mar-2023)
-%   - Compatible con versión de FW 1.4.2.0
+%   - Compatible con versiï¿½n de FW 1.4.2.0
 %  Ultimas modificaicones:
-%   - Adición; lectura de marcas generadas desde el SW
-%   - Adición; lectura de numero de canales analogos
-%   - Adición; seperación canales analogos (var: ARQcanalesADC)
-%   - Adición; separación canales digitales (Trigger de ADSs, var: ARQTrigger)
-%   - Conversión correcta de unidades (volts) para los canales analógicos.
+%   - Adiciï¿½n; lectura de marcas generadas desde el SW
+%   - Adiciï¿½n; lectura de numero de canales analogos
+%   - Adiciï¿½n; seperaciï¿½n canales analogos (var: ARQcanalesADC)
+%   - Adiciï¿½n; separaciï¿½n canales digitales (Trigger de ADSs, var: ARQTrigger)
+%   - Conversiï¿½n correcta de unidades (volts) para los canales analï¿½gicos.
 % 
 %*** VARIABLES DE SALIDA ***
-% Variable ARQdig: Contiene la señal sin procesa
-% Variable ARQdigCal: Contiene la señal procesada con valores de ganancia, offset, escalas
-% Variable ARQstatusAD: Contiene la señal del StatusAD
-% Variable ARQTrigger: Contiene la señal de los trigger si estos estan habilitados
-% Variable ARQcanalesADC: Contiene la señal de los ADC si estos estan habilitados
+% Variable ARQdig: Contiene la seï¿½al sin procesa
+% Variable ARQdigCal: Contiene la seï¿½al procesada con valores de ganancia, offset, escalas
+% Variable ARQstatusAD: Contiene la seï¿½al del StatusAD
+% Variable ARQTrigger: Contiene la seï¿½al de los trigger si estos estan habilitados
+% Variable ARQcanalesADC: Contiene la seï¿½al de los ADC si estos estan habilitados
 % 
 % Example to open file:
 % all_data = Open_File_MAdq();
@@ -48,7 +48,7 @@ if nargin == 0
     Dialogo = true;
 end
 
-%directorio predeterminado vacío
+%directorio predeterminado vacï¿½o
 path_arq = [];
 
 if (nargin == 1)
@@ -65,11 +65,11 @@ if (nargin == 1)
     end
 end
     
-%abre el diálogo de archivo con el directorio predeterminado    
+%abre el diï¿½logo de archivo con el directorio predeterminado    
 if Dialogo
     [nameFile,PATH_]=uigetfile('*.madq','Seleccionar el archivo',path_arq);
     if nameFile==0
-        signals = [];      %vuelve vacío si se cancela la apertura
+        signals = [];      %vuelve vacï¿½o si se cancela la apertura
         return;
     end
     NombreARQdig=[PATH_,nameFile];
@@ -78,13 +78,13 @@ end
 ARQ=fopen(NombreARQdig,'rb');
 
 if ARQ<0
-    exibe('¡No se pudo abrir este archivo!', '¡Error!');
-    error('¡Este archivo no se pudo abrir!')
+    error('ï¿½No se pudo abrir este archivo!', 'ï¿½Error!');
+    error('ï¿½Este archivo no se pudo abrir!')
 end
 
 
 % sinais.F_amost_in=[]; % Inicializa a freq. muestreo con una matriz vacia;
-% Sirve para permitir la inclusión de un valor "predeterminado" en el cuadro de diálogo
+% Sirve para permitir la inclusiï¿½n de un valor "predeterminado" en el cuadro de diï¿½logo
 % de frec. de muestreo, cuando sea posible obtenerlo del encabezado del archivo.
 
 %Archivo formato PEB:
@@ -95,9 +95,9 @@ preci='int32';
 %preci='float64';
 
 %Lectura de Cabecera
-NChar=fread(ARQ,1,'uint8'); % se lee primero tamaño del vector de version PEB
-signals.Version_PEB=setstr(fread(ARQ,NChar,'uchar')');%leemos el vector con el tamaño leido anteriormente
-NChar=fread(ARQ,1,'uint8'); %leemos el tamaño del buffer de la version del Firmware
+NChar=fread(ARQ,1,'uint8'); % se lee primero tamaï¿½o del vector de version PEB
+signals.Version_PEB=setstr(fread(ARQ,NChar,'uchar')');%leemos el vector con el tamaï¿½o leido anteriormente
+NChar=fread(ARQ,1,'uint8'); %leemos el tamaï¿½o del buffer de la version del Firmware
 signals.Version_Firmware=setstr(fread(ARQ,NChar,'uchar')');
 
 signals.Fs=fread(ARQ,1,'uint16');
@@ -163,14 +163,14 @@ for i=1:Numero_Marcas
 end
 
 
-Tam_header=ftell(ARQ); %tamaño cabecera 
+Tam_header=ftell(ARQ); %tamaï¿½o cabecera 
 
 Ncanales_StatusAD =  Numero_Canales + ceil((Numero_Canales/8)); %Contiene el numero de canales mas el numero de status AD
 fseek(ARQ,0,'eof');    %salta al final del archivo
 NFrame_Count = 1;  %Variable para los datos del framecount
-Tam_arq = (ftell(ARQ)-Tam_header)/Bpa;   %tamaño del archivo que contiene las muestras
-Numero_muestras =fix(Tam_arq/(Ncanales_StatusAD + NFrame_Count + Numero_Canales_ADC)); %Tamaño de la señal en número de muestras intercaladas
-Tam_arq = Numero_muestras*(Ncanales_StatusAD + NFrame_Count + Numero_Canales_ADC);   %Corrige el tamaño para que coincida con un número entero de bytes
+Tam_arq = (ftell(ARQ)-Tam_header)/Bpa;   %tamaï¿½o del archivo que contiene las muestras
+Numero_muestras =fix(Tam_arq/(Ncanales_StatusAD + NFrame_Count + Numero_Canales_ADC)); %Tamaï¿½o de la seï¿½al en nï¿½mero de muestras intercaladas
+Tam_arq = Numero_muestras*(Ncanales_StatusAD + NFrame_Count + Numero_Canales_ADC);   %Corrige el tamaï¿½o para que coincida con un nï¿½mero entero de bytes
 fseek(ARQ,Tam_header,'bof'); %omitir el encabezado
 
 [ARQd,sr]=fread(ARQ,Tam_arq,'int32');
@@ -178,20 +178,20 @@ fseek(ARQ,Tam_header,'bof'); %omitir el encabezado
 %ARQdig=reshape(ARQdig,Ncanales,Numero_muestras/2);   %ensambla la matriz con canales en filas y muestras en columnas
 ARQd=reshape(ARQd,(Ncanales_StatusAD + NFrame_Count + Numero_Canales_ADC), Numero_muestras);   %ensambla la matriz con canales en filas y muestras en columnas
 
-%Obtiene solo las señales de los canales
+%Obtiene solo las seï¿½ales de los canales
 for k = 1:Numero_Canales,
        ARQdig(k,:) = ARQd(k,:);
 end
 signals.ARQdig = ARQdig;
 
-%Señal de los canales calibrados
+%Seï¿½al de los canales calibrados
 of = cell2mat(signals.Offset)'*ones(1, Numero_muestras);
 gan = cell2mat(signals.Ganancia)'*ones(1, Numero_muestras);
 esca = cell2mat(signals.Escalas)'*ones(1, Numero_muestras);
 % signals.ARQdig2 = (cell2mat(signals.ARQdig) + signals.Offset*ones(1,Numero_muestras)).*(signals.Ganancia*ones(1,Numero_muestras));  %escalona os valores
 signals.ARQdigCal = ((ARQdig - of).*esca)./gan;  %escalona los valores
 
-%Obtiene solo las señales del statusAD
+%Obtiene solo las seï¿½ales del statusAD
 %ARQstatusAD= 1;
 for k = Numero_Canales + 1:Ncanales_StatusAD,
        ARQstatusAD(k-Numero_Canales,:) = ARQd(k,:);
@@ -209,7 +209,7 @@ if (Numero_Canales_Trigger > 0),
 end
 
 
-%Obtiene solo las señales de los canales analogos
+%Obtiene solo las seï¿½ales de los canales analogos
 if (Numero_Canales_ADC > 0),
     for k = Numero_Canales + 3:(Ncanales_StatusAD + NFrame_Count + Numero_Canales_ADC),
            ARQcanalesADC(k-Numero_Canales-2,:) = ARQd(k,:)*2*3.3/4095;
@@ -220,7 +220,7 @@ else
 end
 
 
-%Obtiene solo las señales del frameCount
+%Obtiene solo las seï¿½ales del frameCount
 FrameCount(1,:) = ARQd(Ncanales_StatusAD + NFrame_Count,:);
 signals.FrameCount = FrameCount;
 
@@ -233,7 +233,7 @@ signals.ARQdigCal_units = "Volts";
 
 fclose(ARQ);
 
-%Para la visualizacion de las señales de Trigger es necesario separa la
-%señal ARQstatusAD en donde cada valor son 24bits y esta conformado como 
+%Para la visualizacion de las seï¿½ales de Trigger es necesario separa la
+%seï¿½al ARQstatusAD en donde cada valor son 24bits y esta conformado como 
 %1100 + 8 bits LOFF_STATP + 8 bits LOFF_STATN + 4 bits GPIO 
 %Los 4 bits del GPIO esta desgnado como  GPIO4, GPIO3, GPIO2, GPIO1.
