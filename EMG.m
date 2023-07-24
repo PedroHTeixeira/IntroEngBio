@@ -2,7 +2,7 @@ clear;
 close all;
 clc;
 %% open file
-all_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s2_v1.madq');
+all_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s1_v1.madq');
 
 %%Obtendo Sinal Cru
 fs = all_data.Fs; % Hz
@@ -123,6 +123,7 @@ for i  = 1:3:num_janelas
     subplot(3,2,6);
     plot(extensor(i+2, :))
    endif
+   axis equal;
 end
 
 % class 1 = repouso
@@ -228,6 +229,7 @@ xlabel('Característica 1');
 ylabel('Característica 2');
 legend('Classe 1', 'Classe 2', 'Classe 3', 'Linha de Separação Classe 1', 'Linha de Separação Classe 2', 'Linha de Separação Classe 3');
 grid on;
+
 hold off;
 %figure
 %plot(janelas(2,:))
