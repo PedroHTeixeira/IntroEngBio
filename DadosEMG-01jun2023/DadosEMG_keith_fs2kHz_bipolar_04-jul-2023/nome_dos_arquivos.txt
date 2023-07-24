@@ -1,0 +1,5 @@
+name_sessãoX_velocidadeX
+
+name_cmm_fs
+
+cmm = contração muscular máxima
