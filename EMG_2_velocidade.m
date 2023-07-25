@@ -2,8 +2,9 @@ clear;
 close all;
 clc;
 %% open file
-all_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s2_v1.madq');
-test_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s3_v1.madq');
+v1_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s2_v1.madq');
+v2_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s2_v2.madq');
+v3_data = Open_File_MAdq('DadosEMG_keith_fs2kHz_bipolar_04-jul-2023\keith_s2_v3.madq');
 function [signal_f_f5, d1] = pre_process(all_data)
 %%Obtendo Sinal Cru
 fs = all_data.Fs; % Hz
@@ -77,11 +78,11 @@ legend('ch1', 'ch2', 'ch3');
 
 endfunction
 
-[signal_f_f5, d1]= pre_process(all_data);
+
 % Linear de Fisher
-function [class1_data, class2_data] = janelar(d1)
-tamanho_janela = 14000; % Tamanho da janela desejada tava 18
-passo = 14000; % Passo de deslocamento entre as janelas Tem q ver se a janela disso eh equivalente
+ function [class1_data, class2_data] = janelar(d1, size)
+tamanho_janela = size; % Tamanho da janela desejada tava 18
+passo = size; % Passo de deslocamento entre as janelas Tem q ver se a janela disso eh equivalente
 
 ch1 = d1(:,1);
 ch2 = d1(:,2);
@@ -134,30 +135,55 @@ class2_data= zeros(ceil(num_janelas/2),2);
 
 for i  = 1:2:num_janelas
    if i <= num_janelas-1
-   class1_data(((i+1)/2), :)= [mean(extensor(i , :)), mean(flexor(i, :))];
+   class1_data(((i+1)/2), :)= [min(extensor(i , :)), min(flexor(i, :))];
    endif
    if i+1 <= num_janelas-1
-   class2_data(((i+1)/2), :)= [mean(extensor(i+1 , :)), mean(flexor(i+1, :))];
+   class2_data(((i+1)/2), :)= [min(extensor(i+1 , :)), min(flexor(i+1, :))];
    endif
 end
 endfunction
+[signal_f_f5, d1]= pre_process(v1_data);
+[class1_data, class2_data] = janelar(d1, 28000);
+v1 = class1_data + class2_data;
 
-[class1_data, class2_data] = janelar(d1);
+[signal_f_f5, d1]= pre_process(v2_data);
+[class1_data, class2_data] = janelar(d1, 24000);
+v2 = class1_data + class2_data;
+
+[signal_f_f5, d1]= pre_process(v3_data);
+[class1_data, class2_data] = janelar(d1, 20000);
+v3 = class1_data + class2_data;
 % Dados de exemplo (duas classes com 2 características cada)
 
 
-% Concatenando os dados das duas classes em uma única matriz
-all_data = [class1_data; class2_data];
+% Dados de exemplo (3 classes com 2 características cada)
+class1_data = v1
+class2_data = v2
+class3_data = v3
+
+figure
+scatter(class1_data(:, 1),class1_data(:, 2))
+hold on
+scatter(class2_data(:, 1),class2_data(:, 2))
+scatter(class3_data(:, 1),class3_data(:, 2))
+legend( 'v1', 'v2', 'v3');
+hold off
+
+% Concatenando os dados das três classes em uma única matriz
+all_data = [class1_data; class2_data; class3_data];
 
 % Cálculo das médias das classes
 mean_class1 = mean(class1_data);
 mean_class2 = mean(class2_data);
+mean_class3 = mean(class3_data);
 
 % Cálculo da matriz de dispersão dentro das classes (SW)
-SW = cov(class1_data) + cov(class2_data);
+SW = cov(class1_data) + cov(class2_data) + cov(class3_data);
 
 % Cálculo da matriz de dispersão entre as classes (SB)
-SB = (mean_class1 - mean_class2)' * (mean_class1 - mean_class2);
+SB = (mean_class1 - mean_class2)' * (mean_class1 - mean_class2) + ...
+     (mean_class1 - mean_class3)' * (mean_class1 - mean_class3) + ...
+     (mean_class2 - mean_class3)' * (mean_class2 - mean_class3);
 
 % Cálculo da matriz de projeção ótima (W)
 W = pinv(SW) * SB;
@@ -165,32 +191,19 @@ W = pinv(SW) * SB;
 % Projeção dos dados de exemplo no espaço de recursos selecionado
 class1_data_projected = class1_data * W;
 class2_data_projected = class2_data * W;
+class3_data_projected = class3_data * W;
 
-figure
-scatter(class1_data(:, 1),class1_data(:, 2))
-hold on
-scatter(class2_data(:, 1),class2_data(:, 2))
-legend( 'classe1', 'classe2');
-hold off
-
-% Vetor de direção da reta de Fisher
-direcao_fisher = W(:, 1);
-
-% Pontos extremos da reta de separação
-ponto1 = mean(class1_data_projected) + direcao_fisher' * min(min(class1_data_projected)) * 1.2;
-ponto2 = mean(class1_data_projected) + direcao_fisher' * max(max(class1_data_projected)) * 1.2;
-
-% Plot dos dados projetados e da reta de separação
+% Plot dos dados projetados
 figure;
 scatter(class1_data_projected(:, 1), class1_data_projected(:, 2), 'red', 'filled');
 hold on;
 scatter(class2_data_projected(:, 1), class2_data_projected(:, 2), 'blue', 'filled');
-plot([ponto1(1), ponto2(1)], [ponto1(2), ponto2(2)], 'k--', 'LineWidth', 2);
-title('Projeção dos Dados em Espaço de Recursos Transformado com Reta de Separação');
+scatter(class3_data_projected(:, 1), class3_data_projected(:, 2), 'green', 'filled');
+
+% Configurações do gráfico
+title('Projeção dos Dados em Espaço de Recursos Transformado');
 xlabel('Característica 1');
 ylabel('Característica 2');
-legend('Classe 1', 'Classe 2', 'Reta de Separação');
+legend('Classe 1', 'Classe 2', 'Classe 3');
 grid on;
-
 hold off;
-
